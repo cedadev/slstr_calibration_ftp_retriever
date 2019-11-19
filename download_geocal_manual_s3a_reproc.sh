@@ -14,13 +14,15 @@ do
 
 echo $year$month$day
 
+export code_root=/group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever
+
 export process_date=$year$month$day
 export base_directory=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/geocal/geocal_reproc_v007/
 
 #export temp_geocal_list=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/phase_E1/data/MPC/OPTICAL/GEOCAL/temp_geocal_filelist.txt
 export temp_geocal_list=$base_directory/temp_geocal_filelist.txt
 
-/usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_mpc_geocal_reproc_$model.cfg -v -L -p SIIIMPC-3296_GEOCAL_SLSTR_A_REP_GEC_V007/V007_SVAL/$model/SLSTR/$timeliness/$process_date > $temp_geocal_list
+/usr/bin/python2.7 $code_root/data_retriever.py -c $code_root/config/slstr_cpa_mpc_geocal_reproc_$model.cfg -v -L -p SIIIMPC-3296_GEOCAL_SLSTR_A_REP_GEC_V007/V007_SVAL/$model/SLSTR/$timeliness/$process_date > $temp_geocal_list
 
 #export date_directory=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/phase_E1/data/MPC/OPTICAL/GEOCAL/SLSTR/$timeliness/$process_date
 export date_directory=$base_directory/$year/$month/$day
@@ -30,7 +32,7 @@ if [ ! -d $date_directory ]; then
 fi
 chmod g+w $date_directory
 
-export temp_config=/group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_mpc_geocal_temp_reproc_$model.cfg
+export temp_config=$code_root/config/slstr_cpa_mpc_geocal_temp_reproc_$model.cfg
 #export output_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/phase_E1/data/MPC/OPTICAL/GEOCAL/SLSTR/$timeliness
 #export output_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/geocal
 #export temp_log_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/phase_E1/data/MPC/geocal_logs/
@@ -60,10 +62,10 @@ while read -r line; do
    echo local_path: $date_directory/$id >>$temp_config
    echo making new directory $date_directory/$id
    mkdir $date_directory/$id
-   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
-   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
-   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
-   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
+   /usr/bin/python2.7 $code_root/data_retriever.py -c $temp_config -vF
+   /usr/bin/python2.7 $code_root/data_retriever.py -c $temp_config -vF
+   /usr/bin/python2.7 $code_root/data_retriever.py -c $temp_config -vF
+   /usr/bin/python2.7 $code_root/data_retriever.py -c $temp_config -vF
    # clear log directory
    rm $temp_log_dir/*_retrieve.log
 done < <(sed -e 1,6d $temp_geocal_list) 

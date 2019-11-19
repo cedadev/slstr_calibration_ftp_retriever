@@ -2,7 +2,7 @@
 
 export model=$1
 
-export config_file=/group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_viscal_$model'.cfg'
+export config_file=/group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_viscal_$model'.cfg'
 export lockfile=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/vsc_ax/viscal_lock.txt
 export output_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/vsc_ax/
 export log_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/vsc_ax/logs/

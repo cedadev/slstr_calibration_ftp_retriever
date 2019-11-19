@@ -18,7 +18,7 @@ export temp_orbit_list=$base_directory/temp_mon_orbitlist.txt
 
 export remote_dir=SL_0_monitoring_ope/$model'_monitoring'/$data_type/$process_date
 
-/usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_mon_$model.cfg -vL  -p $remote_dir > $temp_mon_list
+/usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_mon_$model.cfg -vL  -p $remote_dir > $temp_mon_list
 
 export date_directory=$base_directory/$data_type/$process_date
 
@@ -27,7 +27,7 @@ if [ ! -d $date_directory ]; then
 fi
 chmod g+w $date_directory
 
-export temp_config=/group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_mpc_mon_temp_$model.cfg
+export temp_config=/group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_mpc_mon_temp_$model.cfg
 export temp_log_dir=$base_directory/logs_tmp/
 
 export remote_len=${#remote_dir}
@@ -56,7 +56,7 @@ while read -r line; do
       echo product_base: >>$temp_config
    fi
    if [ "$data_type" == "bb_counts" ] || [ "$data_type" == "bb_temps" ] || [ "$data_type" == "viscal_counts" ]; then
-      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
+      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
    else
       if [ ! -d $date_directory/$id ]; then
          cp $temp_config $temp_config.thumb
@@ -64,13 +64,13 @@ while read -r line; do
          mkdir $date_directory/$id
          mkdir $date_directory/$id/thumbnails
          echo local_path: $date_directory/$id/thumbnails >>$temp_config.thumb
-         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vFL -p $remote_dir/$id > $temp_orbit_list
-         while read -r line; do
-            /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF -p $remote_dir/$id
+         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vFL -p $remote_dir/$id > $temp_orbit_list
+         while read -r line2; do
+            /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF -p $remote_dir/$id
          done < <(sed -e 1,6d $temp_orbit_list) 
-         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config.thumb -vFL -p $remote_dir/$id/thumbnails > $temp_orbit_list
-         while read -r line; do
-            /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config.thumb -vF -p $remote_dir/$id/thumbnails
+         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config.thumb -vFL -p $remote_dir/$id/thumbnails > $temp_orbit_list
+         while read -r line2; do
+            /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config.thumb -vF -p $remote_dir/$id/thumbnails
          done < <(sed -e 1,6d $temp_orbit_list)
       fi 
   fi

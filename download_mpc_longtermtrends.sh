@@ -17,7 +17,7 @@ chmod g+w $longtermtrend_dir
 export temp_mon_list=$base_directory/temp_ltt_filelist.txt
 export remote_dir=SL_0_monitoring_ope/$model'_monitoring/long_term_trends/'
 
-/usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_mon_$model.cfg -vL  -p $remote_dir > $temp_mon_list
+/usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_mon_$model.cfg -vL  -p $remote_dir > $temp_mon_list
 
 #export date_directory=$base_directory/$data_type/$process_date
 
@@ -26,7 +26,7 @@ export remote_dir=SL_0_monitoring_ope/$model'_monitoring/long_term_trends/'
 #fi
 #chmod g+w $date_directory
 
-export temp_config=/group_workspaces/cems2/slstr_cpa/software/ftp_retriever/config/slstr_cpa_mpc_mon_temp_$model.cfg
+export temp_config=/group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_mpc_mon_temp_$model.cfg
 export temp_log_dir=$base_directory/logs_tmp/
 
 export remote_len=${#remote_dir}
@@ -67,7 +67,7 @@ while read -r line; do
       echo product_base:  >>$temp_config
       echo local_path: $longtermtrend_dir/count_histogram/nadir_view >>$temp_config
       for i in {0..92} ; do
-         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
+         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
       done
       if [ ! -d $longtermtrend_dir/count_histogram/oblique_view ]; then
          mkdir -p $longtermtrend_dir/count_histogram/oblique_view
@@ -76,17 +76,17 @@ while read -r line; do
       echo product_base:  >>$temp_config
       echo local_path: $longtermtrend_dir/count_histogram/oblique_view >>$temp_config
       for i in {0..92} ; do
-         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
+         /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
       done
    else 
       echo ftp_server_path: $remote_dir/$id >>$temp_config
       echo product_base:  >>$temp_config
       echo local_path: $longtermtrend_dir/$id >>$temp_config
-      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
-      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
-      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
+      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
+      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
+      /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
    fi
-   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/ftp_retriever/data_retriever.py -c $temp_config -vF
+   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
    # clear log directory
    rm $temp_log_dir/*_retrieve.log
 done < <(sed -e 1,6d $temp_mon_list) 
