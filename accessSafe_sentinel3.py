@@ -59,7 +59,7 @@ def appendNameSpace(path):
             count += 1
 
         except Exception as ex:
-           print "Could not access xpath: %s" %path
+           print("Could not access xpath: %s" %path)
 
     #clear up any blank namespace prefixes
     nameSpaceAppendedPath = appendedPath.replace('{}','')
@@ -113,11 +113,11 @@ class safe_access(object):
         value = None
 
         try:
-            xpath = instrument_xpath.keys()[0]
+            xpath = list(instrument_xpath.keys())[0]
             element_type = instrument_xpath[xpath]
 
         except Exception as ex:
-            print "SAFE xpath object is not in correct format ('xpath':'type'"
+            print("SAFE xpath object is not in correct format ('xpath':'type'")
 
         try:
 
@@ -139,7 +139,7 @@ class safe_access(object):
             return value
 
         except Exception as ex:
-            print "Could not extract value for %s (%s)" %(xpath,ex)
+            print("Could not extract value for %s (%s)" %(xpath,ex))
 
 
 

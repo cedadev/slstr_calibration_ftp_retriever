@@ -38,10 +38,10 @@ for product in list_of_products:
         
         try:
             if check_safe_dir_struct([manifest_file, isp_datafile, isp_annotation_datafile], verbose = True, remove = False):
-                print "%s: OK" %product_dir
+                print("%s: OK" %product_dir)
             
             else:
-                print "%s: BAD" %product_dir
+                print("%s: BAD" %product_dir)
                 
         except Exception as ex:
-            print "Problem: %s" %ex
+            print("Problem: %s" %ex)

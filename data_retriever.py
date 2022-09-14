@@ -7,7 +7,7 @@ Script to control the identification and retrieval of SLSTR commissioning phase 
 '''
 
 import os,sys
-import ConfigParser
+import configparser
 from optparse import OptionParser, OptionGroup
 import zipfile
 from datetime import datetime
@@ -104,14 +104,14 @@ def check_safe_dir_struct(safe_product, verbose = False, remove = False):
         valid_data = False
         
         if options.verbose:
-            print "Problem assessing safe dir struct for: %s" %ex
+            print("Problem assessing safe dir struct for: %s" %ex)
             
     #clear bad data so picked up next time
     if not valid_data and remove:
         
         for filename in safe_product:
             if verbose:
-                print "REMOVING: %s " %(filename)             
+                print("REMOVING: %s " %(filename))             
             
             os.remove(filename)
             logging.info("REMOVED: %s" %filename)
@@ -159,13 +159,13 @@ class Retrieve_Data():
         try:
             if not self.check_zip(retrieved_file):
                 if options.verbose:
-                    print "Problem with file %s" %retrieved_file
+                    print("Problem with file %s" %retrieved_file)
                                 
                 valid_data = False
                               
         except Exception as ex:
             if options.verbose:
-                print "Could not check file: %s (%s)" %(retrieved_file,ex)
+                print("Could not check file: %s (%s)" %(retrieved_file,ex))
                             
             valid_data = False
             
@@ -173,7 +173,7 @@ class Retrieve_Data():
         if not valid_data and remove:
             
             if options.verbose:
-                print "REMOVING: %s " %(retrieved_file)             
+                print("REMOVING: %s " %(retrieved_file))             
             
             os.remove(retrieved_file)
             logging.info("REMOVED: %s" %retrieved_file)
@@ -191,7 +191,7 @@ class Retrieve_Data():
         good_files_retrieved = []
         bad_files_retrieved = []
     
-        for product_name in files_retrieved.keys():
+        for product_name in list(files_retrieved.keys()):
             
             #SAFE dir struct
             if type(files_retrieved[product_name])is list:     
@@ -250,10 +250,10 @@ class Retrieve_Data():
                 
         #bulk_transfer_start=datetime.now()
         
-        for product_file in file_list.keys():
+        for product_file in list(file_list.keys()):
         
             if options.verbose:
-                print "Attempting to retrieve %s" %(product_file)
+                print("Attempting to retrieve %s" %(product_file))
                                                  
             
             if not flat_structure:
@@ -295,8 +295,8 @@ class Retrieve_Data():
                         retrieved_status, speed = self.connection.get_file(local_full_path, file_to_retrieve, options, force=force)
                         
                         if retrieved_status:
-                            logging.info("SUCCESS: %s to %s (at ~%s Kb/s)" %(product_file,retrieved_status.keys()[0], speed))      
-                            file_set.append(retrieved_status.keys()[0])
+                            logging.info("SUCCESS: %s to %s (at ~%s Kb/s)" %(product_file,list(retrieved_status.keys())[0], speed))      
+                            file_set.append(list(retrieved_status.keys())[0])
                             
                         else:
                             
@@ -312,8 +312,8 @@ class Retrieve_Data():
                     retrieved_status, speed = self.connection.get_file(local_full_path, file_list[product_file], options, force=force)
                                     
                     if retrieved_status[os.path.join(local_full_path,product_file)]:
-                        logging.info("SUCCESS: %s to %s (at ~%s Kb/s)" %(product_file,retrieved_status.keys()[0], speed))      
-                        files_retrieved[product_file] = retrieved_status.keys()[0]
+                        logging.info("SUCCESS: %s to %s (at ~%s Kb/s)" %(product_file,list(retrieved_status.keys())[0], speed))      
+                        files_retrieved[product_file] = list(retrieved_status.keys())[0]
                         
                     else:
                         #record files previously retrieved.
@@ -338,6 +338,8 @@ class Retrieve_Data():
             self.ftp_user = config.get('default','ftp_user')
             self.ftp_pass = config.get('default','ftp_pw')
             self.ftp_site = config.get('default','ftp_host')
+            #self.tls = config.get('default', 'tls')
+            self.tls = True # Hardcode this for Ed 14/09/2022
             self.local_path = config.get(stream,'local_path')
             
             self.product_type = config.get(stream,'product_base')
@@ -347,14 +349,13 @@ class Retrieve_Data():
         
         #setup connection
         try:
-            self.connection = Retrieve_By_FTP(self.ftp_user, self.ftp_pass,self.ftp_site)
+            self.connection = Retrieve_By_FTP(self.ftp_user, self.ftp_pass,self.ftp_site, tls=self.tls)
             
         except Exception as ex:            
             self.connection.close_ftp_connection()
             raise Exception ("ERROR: Could not connect to %s (%s)" %(self.ftp_site,ex))
         
-               
-        
+                
 def set_options(parser):
         
     ingest_opt = OptionGroup(parser, "FTP List Options", "Use these options to find data on ESA FTP site for SLSTR rehearsal data.  \
@@ -417,7 +418,7 @@ def check_options(options):
         sys.exit()
     ''' 
     if options.config is None:
-        print "\nError: Please specify an valid configuration file!"
+        print("\nError: Please specify an valid configuration file!")
         parser.print_help()
         sys.exit()
         
@@ -429,12 +430,12 @@ def check_options(options):
     '''
          
     if options.remove and not options.check_data:
-        print "\nError: can only remove files if -C option is used!"
+        print("\nError: can only remove files if -C option is used!")
         parser.print_help()
         sys.exit()
         
     if options.missing and not options.identify_retrievals:
-        print "\nError: can only show missing files if -I option is used!"
+        print("\nError: can only show missing files if -I option is used!")
         parser.print_help()
         sys.exit()
         
@@ -452,14 +453,14 @@ def list_products(config, stream, verbose = None, logging = None):
         list_data.list_data_items()
         
     except Exception as ex:
-        print "ERROR: unable to generate list of files to retrieve (%s)" %ex
+        print("ERROR: unable to generate list of files to retrieve (%s)" %ex)
         
     #activate the main script
     try:
         files_to_get = list_data.list_data_items()
         
     except Exception as ex:
-        print "ERROR: unable to generate list of files to retrieve (%s)" %ex
+        print("ERROR: unable to generate list of files to retrieve (%s)" %ex)
         
         
     return files_to_get
@@ -474,11 +475,11 @@ def summarise_data_struct(files_retrieved):
     #summarise what we have retrieved:
     list_files_retrieved = []
     
-    products = len(files_retrieved.keys())
+    products = len(list(files_retrieved.keys()))
     
     try:
     
-        for sub_struct in files_retrieved.values():
+        for sub_struct in list(files_retrieved.values()):
             if type(sub_struct) is list:
                 for product in sub_struct:
                     list_files_retrieved.append(product)
@@ -489,7 +490,7 @@ def summarise_data_struct(files_retrieved):
         return list_files_retrieved, products
     
     except Exception as ex:
-        print "Problem summarising structure! (%s)" %ex
+        print("Problem summarising structure! (%s)" %ex)
         return None, None
 
 
@@ -513,7 +514,7 @@ def retrieve_data(config,options,stream):
         
     except Exception as ex:
         msg = "ERROR: unable to find data on server (%s)" %ex
-        print msg
+        print(msg)
         return data_retrieved, msg
     
     list_files_retrieved, number_of_products = summarise_data_struct(files_on_server)
@@ -522,7 +523,7 @@ def retrieve_data(config,options,stream):
         msg= "\nFound %s files on remote server" %len(list_files_retrieved)
     
         if options.verbose:
-            print msg
+            print(msg)
         
         logging.info(msg)
         
@@ -533,7 +534,7 @@ def retrieve_data(config,options,stream):
         #Stop here if this is all we wanted to do - but list the files we found
         
         for filename in list_files_retrieved:            
-            print filename
+            print(filename)
             
         #print "\nFound %s products and %s files to retrieve" %(number_of_products,len(list_files_retrieved)) 
             
@@ -557,7 +558,7 @@ def retrieve_data(config,options,stream):
     #msg= "\nFound %s products in %s files on remote server not present (or to be overwritten) on local path" %(products_to_retrieve,len(list_files_identified))
     
     #if options.verbose:
-    print msg
+    print(msg)
     
     logging.info(msg)
     
@@ -565,7 +566,7 @@ def retrieve_data(config,options,stream):
         #Stop here if this is all we wanted to do - but list the files we found
         if options.verbose:
             for filename in list_files_identified:
-                print filename
+                print(filename)
                 
         return data_retrieved, msg
     
@@ -587,7 +588,7 @@ def retrieve_data(config,options,stream):
         msg = "Unable to retrieve data: %s" %ex
         
         if options.verbose:
-            print msg
+            print(msg)
         
         logging.info("Problem retrieving data: %s" %msg)
         
@@ -600,7 +601,7 @@ def retrieve_data(config,options,stream):
                                                                                                  len(files_already_retrieved))
     
     if options.verbose:
-        print msg
+        print(msg)
     
     logging.info(msg)
     
@@ -629,7 +630,7 @@ def retrieve_data(config,options,stream):
             msg = "Unable to check data: %s" %ex
             roi_email_summary += msg
             if options.verbose:
-                print msg
+                print(msg)
             
             logging.info("Problem checking data: %s" %msg)
         
@@ -655,7 +656,7 @@ def email_summary(message):
         mail = smtplib.SMTP('localhost')
         mail.sendmail('SLSTR_data_retrieval', recipients, message)
         
-        print "Successfully sent email!"
+        print("Successfully sent email!")
     
     except Exception as ex:
         logging.info("Could not extract email addresses to send summary information to!")          
@@ -678,16 +679,16 @@ if __name__ == '__main__':
     if os.path.isfile(options.config):
         
         try:
-            config=ConfigParser.RawConfigParser() 
+            config=configparser.RawConfigParser() 
             config.read(options.config)
             
             targets = config.sections()
           
         except:
-            print "ERROR: Could not extract configuration from %s" %options.config
+            print("ERROR: Could not extract configuration from %s" %options.config)
             
     else:
-        print "ERROR: Cannot open configuration file: %s" %options.config
+        print("ERROR: Cannot open configuration file: %s" %options.config)
         sys.exit()
         
     #sort logging
@@ -701,10 +702,10 @@ if __name__ == '__main__':
         logging.basicConfig(filename=log_file_name,  level=logging.INFO,\
                             format='%(asctime)s:\t%(message)s', datefmt="%Y-%m-%dT%H:%M:%S")
         
-        print "Logging output: %s" %log_file_name
+        print("Logging output: %s" %log_file_name)
                 
     except Exception as ex:
-        print "Cannot initiate logging!"
+        print(f"Cannot initiate logging! {ex}")
         sys.exit()
         
     
@@ -714,12 +715,12 @@ if __name__ == '__main__':
                    
         plock= Retrieve_Lock(lockfile)
        
-    except PlockPresent, err:
+    except PlockPresent as err:
         raise Exception ("Previous process still in operation. Could not create lockfile (%s)" %lockfile)               
         sys.exit()
         
     except Exception as ex:
-        print "Problem with plock file! %s"%ex
+        print("Problem with plock file! %s"%ex)
         sys.exit()
         
     
@@ -736,7 +737,7 @@ if __name__ == '__main__':
             msg = "\nSTARTING ROI: %s\n" %target
             
             if options.verbose:
-                print msg 
+                print(msg) 
             logging.info(msg)
             
             if options.email:
@@ -750,7 +751,7 @@ if __name__ == '__main__':
                             
             except Exception as ex:
                 msg = "Problem obtaining data: %s" %ex
-                print msg
+                print(msg)
                 successful_retrieve = False
                 
                 if options.email:
@@ -773,7 +774,7 @@ if __name__ == '__main__':
                     message += msg
                         
             if options.verbose:
-                print msg 
+                print(msg) 
             logging.info(msg)
             
             cnt += 1
@@ -786,7 +787,7 @@ if __name__ == '__main__':
         message += "\nSummary log file: %s" %log_file_name
             
     if options.verbose:
-        print msg
+        print(msg)
         
     logging.info(msg)
     
@@ -796,7 +797,7 @@ if __name__ == '__main__':
         
     plock.release()
     
-    print "Finished"
+    print("Finished")
 
     
     

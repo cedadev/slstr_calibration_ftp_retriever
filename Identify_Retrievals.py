@@ -6,7 +6,7 @@ Script to check contents of list obtained by List_Data_Items.py that are not cur
 @author: sdonegan
 '''
 import os,sys
-import ConfigParser
+import configparser
 from optparse import OptionParser, OptionGroup
 
 from SLSTR_Utilities import identify_files as identify_files
@@ -40,27 +40,27 @@ def set_options(parser):
 def check_options(options):
            
     if options.stream is None:
-        print "\nError: Please specify a retrieval stream within the configuration file (i.e. LI_017_RoI_Greenland)"
+        print("\nError: Please specify a retrieval stream within the configuration file (i.e. LI_017_RoI_Greenland)")
         parser.print_help()
         sys.exit()
         
     if options.config is None:
-        print "\nError: Please specify an valid configuration file!"
+        print("\nError: Please specify an valid configuration file!")
         parser.print_help()
         sys.exit()
         
     if options.outputlist is None:
-        print "\nError: Please specify an output file to list found data to!"
+        print("\nError: Please specify an output file to list found data to!")
         parser.print_help()
         sys.exit()
         
     if options.inputlist is None:
-        print "\nError: Please specify an input file of found data!"
+        print("\nError: Please specify an input file of found data!")
         parser.print_help()
         sys.exit()
         
     if not options.verbose and not options.logging:
-        print "\nError: Please specify either verbose or logging option!!"
+        print("\nError: Please specify either verbose or logging option!!")
         parser.print_help()
         sys.exit()
         
@@ -83,7 +83,7 @@ class Identify_Retrievals():
         missing_tot_cnt = 0
         
         #for products in files_to_retrieve.keys():
-        for products in self.input_list.keys():
+        for products in list(self.input_list.keys()):
             
             product_name = os.path.basename(products)
             
@@ -111,7 +111,7 @@ class Identify_Retrievals():
                         missing_tot_cnt += 1
                 
                         if self.verbose:
-                            print "Checking local files for %s ... MISSING" %(sub_file_stub)
+                            print("Checking local files for %s ... MISSING" %(sub_file_stub))
                     
                         #add REMOTE file to list to eventually retrieve
                         missing_sub_files.append(sub_file)
@@ -121,7 +121,7 @@ class Identify_Retrievals():
                             missing_sub_files.append(sub_file)
                         
                         if self.verbose and not self.missing:
-                            print "Checking local files for %s ... PRESENT" %(sub_file_stub)
+                            print("Checking local files for %s ... PRESENT" %(sub_file_stub))
                                   
                 missing_products[products] = missing_sub_files
                 
@@ -139,18 +139,18 @@ class Identify_Retrievals():
                         missing_products[products] = self.input_list[products]                      
                     
                     if self.verbose:
-                        print "Checking local files for %s ... PRESENT" %(product_name)
+                        print("Checking local files for %s ... PRESENT" %(product_name))
                 else:
                     
                     missing_tot_cnt += 1
                     
                     if self.verbose and not self.missing:
-                        print "Checking local files for %s ... MISSING" %(product_name)
+                        print("Checking local files for %s ... MISSING" %(product_name))
                 
                     missing_products[products] = self.input_list[products]                                              
                                                         
         if self.missing:
-            print "Found %s products (and %s files) missing on local system" %(len(missing_products.keys()),missing_tot_cnt)
+            print("Found %s products (and %s files) missing on local system" %(len(list(missing_products.keys())),missing_tot_cnt))
         
         return missing_products
                 
@@ -161,13 +161,13 @@ class Identify_Retrievals():
         try:
            
             if create_file_list(output_list_file,files_to_retrieve):
-                print "\nFinished: Identified %s files to retrieve" %(len(files_to_retrieve))
+                print("\nFinished: Identified %s files to retrieve" %(len(files_to_retrieve)))
     
             else:
-                print "Problem: Could not write file list %s (NO products found)" %(output_list_file)
+                print("Problem: Could not write file list %s (NO products found)" %(output_list_file))
                               
         except Exception as ex:
-            print "ERROR: Could not write file list %s (Error:%s)" %(output_list_file,ex)
+            print("ERROR: Could not write file list %s (Error:%s)" %(output_list_file,ex))
             
     
         
@@ -183,7 +183,7 @@ class Identify_Retrievals():
         self.missing = None
         
         #attribute to the object all kwargs
-        for name, value in kwargs.items():
+        for name, value in list(kwargs.items()):
             setattr(self, name, value)
             
         #check whether we're pulling info from an input list or a list object
@@ -213,7 +213,7 @@ class Identify_Retrievals():
         if os.path.isfile(self.configFile):
             
             try:
-                self.config=ConfigParser.RawConfigParser() 
+                self.config=configparser.RawConfigParser() 
                 self.config.read(self.configFile)
                 
                 self.path = str(self.config.get(self.stream,'ftp_server_path'))
@@ -222,10 +222,10 @@ class Identify_Retrievals():
                 self.local_path = str(self.config.get(self.stream,'local_path'))
                 
             except:
-                print "ERROR: Could not extract configuration from %s" %self.configFile
+                print("ERROR: Could not extract configuration from %s" %self.configFile)
                 
         else:
-            print "ERROR: Cannot open configuration file: %s" %self.configFile
+            print("ERROR: Cannot open configuration file: %s" %self.configFile)
             
     
     
@@ -256,13 +256,13 @@ if __name__ == '__main__':
                                    stream = options.stream)
         
     except Exception as ex:
-        print "ERROR: unable to generate list of new files to retrieve (%s)" %ex
+        print("ERROR: unable to generate list of new files to retrieve (%s)" %ex)
         
     try:
         products_to_retrieve = products.identify_retrievals()
    
     except Exception as ex:
-        print "ERROR: unable to generate list of new files to retrieve (%s)" %ex
+        print("ERROR: unable to generate list of new files to retrieve (%s)" %ex)
         
         
     #create the list
@@ -270,7 +270,7 @@ if __name__ == '__main__':
         products.create_list_of_items(products_to_retrieve, options.outputlist)
         
     except Exception as ex:
-        print "ERROR: unable to write list of files to retrieve (%s)" %ex
+        print("ERROR: unable to write list of files to retrieve (%s)" %ex)
         
         
    

@@ -5,16 +5,16 @@ Script to generate all directories based on contents of supplied config file
 
 @author: badc
 '''
-import os, sys,ConfigParser
+import os, sys,configparser
 
 config_file = sys.argv[1]
 
 try:
-    config=ConfigParser.RawConfigParser() 
+    config=configparser.RawConfigParser() 
     config.read(config_file)
                             
 except:
-    print "ERROR: Could not extract configuration from %s" %config_file
+    print("ERROR: Could not extract configuration from %s" %config_file)
     
 #get config targets
 targets = config.sections()
@@ -30,11 +30,11 @@ for target in targets:
                 os.mkdir(local_path)
                 
                 if os.path.exists(local_path):
-                    print "Have successfully created: %s" %local_path
+                    print("Have successfully created: %s" %local_path)
                 
             except Exception as ex:
-                print "Unable to make directory: %s (%s)" %(local_path,ex)
+                print("Unable to make directory: %s (%s)" %(local_path,ex))
                 
         else:
-            print "Path %s already exists!"
+            print("Path %s already exists!")
          
