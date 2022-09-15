@@ -339,7 +339,7 @@ class Retrieve_Data():
             self.ftp_pass = config.get('default','ftp_pw')
             self.ftp_site = config.get('default','ftp_host')
             #self.tls = config.get('default', 'tls')
-            self.tls = True # Hardcode this for Ed 14/09/2022
+            self.tls = True # Hardcode this for Ed
             self.local_path = config.get(stream,'local_path')
             
             self.product_type = config.get(stream,'product_base')
