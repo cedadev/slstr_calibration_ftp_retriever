@@ -1,0 +1,14 @@
+[default]
+ftp_host: ftp.acri-cwa.fr
+ftp_user: ftp_s3mpc-esl
+ftp_pw: rM15Nv5p
+check_days: False
+check_days_num: 1000
+log_dir: /gws/nopw/j04/slstr_cpa/public/S3A_monitoring//logs_tmp/
+email_alerts:
+lockfile: /gws/nopw/j04/slstr_cpa/public/S3A_monitoring//mpc_mon_lock_temp.txt
+
+[L1_MPC01]
+ftp_server_path: SL_0_monitoring_ope/S3A_monitoring/2022/20220422
+product_base:
+local_path: /gws/nopw/j04/slstr_cpa/public/S3A_monitoring//2022/20220422/S3A_SL_0_SLT____20220422T004137_20220422T022342_20220422T025906_0299_084_245______PS1_O_NR_004.SEN3/thumbnails
