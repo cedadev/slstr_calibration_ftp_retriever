@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 import hashlib
 import logging
 from accessSafe_sentinel3 import safe_access
+import ssl
 
 #DIR_TYPE = 'd'
 #FILE_TYPE = '-'
@@ -330,7 +331,7 @@ class Retrieve_By_FTP(object):
        
         try:
             self.connection = ftplib.FTP(self.host, self.username, self.password)
-            
+            #self.connection.ssl_version = ssl.PROTOCOL_SSLv23
         except Exception as ex:
             raise Exception ("Could not generate FTP connection (%s)" %ex)
             

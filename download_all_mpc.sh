@@ -12,7 +12,7 @@ if [[ "$copy_completed" =~ "is_finished" ]]; then
   $GWS_PATH/software/slstr_calibration_ftp_retriever/download_mpc_longtermtrends.sh $model
 
   # loop over the last 5 days
-  for dayago in {5..0}
+  for dayago in {0..7}
   do
 
     export month=`date -d $dayago' days ago' +%m`
