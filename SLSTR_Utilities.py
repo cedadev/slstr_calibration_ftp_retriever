@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 import hashlib
 import logging
 from accessSafe_sentinel3 import safe_access
+import ssl
 
 from ftplib import FTP_TLS
 
@@ -341,6 +342,7 @@ class Retrieve_By_FTP(object):
         '''
        
         try:
+
             if not self.tls:
                 self.connection = ftplib.FTP(self.host, self.username, self.password)
 
@@ -366,7 +368,7 @@ class Retrieve_By_FTP(object):
 
         except ftputil.error.PermanentError as ex:
             raise Exception ("Could not generate TLS FTP connection (%s)" %ex)
-            
+  
         except Exception as ex:
             raise Exception ("Could not generate FTP connection (%s)" %ex)
             

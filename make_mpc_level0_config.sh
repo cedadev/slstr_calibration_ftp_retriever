@@ -2,10 +2,10 @@
 
 export model=$1
 
-export config_file=/group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_level0_$model'.cfg'
-export lockfile=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/level0_data/level0_lock.txt
-export output_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/level0_data/
-export log_dir=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/level0_data/logs/
+export config_file=$GWS_PATH/software/slstr_calibration_ftp_retriever/config/slstr_cpa_level0_$model'.cfg'
+export lockfile=$GWS_PATH/s3_slstr_raw_data/$model/flight/level0_data/level0_lock.txt
+export output_dir=$GWS_PATH/s3_slstr_raw_data/$model/flight/level0_data/
+export log_dir=$GWS_PATH/s3_slstr_raw_data/$model/flight/level0_data/logs/
 
 echo [default] >$config_file
 echo #general connection details etc >>$config_file
@@ -26,7 +26,7 @@ echo email_alerts:  >>$config_file
 echo lockfile: $lockfile >>$config_file
 echo >>$config_file
 
-for days_ago in {0..8}
+for days_ago in {1..0}
 do
    export month=`date -d $days_ago' days ago' +%m`
    export year=`date -d $days_ago' days ago' +%Y`

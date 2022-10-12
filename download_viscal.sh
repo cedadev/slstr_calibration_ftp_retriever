@@ -9,11 +9,11 @@ echo $year$month$day
 
 export process_date=$year$month$day
 
-export base_directory=/group_workspaces/cems2/slstr_cpa/s3_slstr_raw_data/$model/flight/vsc_ax
+export base_directory=$GWS_PATH/s3_slstr_raw_data/$model/flight/vsc_ax
 
 export temp_viscal_list=$base_directory/temp_viscal_filelist.txt
 
-/usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_viscal_$model.cfg -v -L -p ADFs/all_current_ADFs/$process_date > $temp_viscal_list
+/usr/bin/python2.7 $GWS_PATH/software/slstr_calibration_ftp_retriever/data_retriever.py -c $GWS_PATH/software/slstr_calibration_ftp_retriever/config/slstr_cpa_viscal_$model.cfg -v -L -p ADFs/all_current_ADFs/$process_date > $temp_viscal_list
 
 export date_directory=$base_directory/$year/$month/$day
 
@@ -22,7 +22,7 @@ if [ ! -d $date_directory ]; then
 fi
 chmod g+w $date_directory
 
-export temp_config=/group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/config/slstr_cpa_mpc_viscal_temp_$model.cfg
+export temp_config=$GWS_PATH/software/slstr_calibration_ftp_retriever/config/slstr_cpa_mpc_viscal_temp_$model.cfg
 export temp_log_dir=$base_directory/logs_tmp/
 
 while read -r line; do 
@@ -46,7 +46,7 @@ while read -r line; do
    echo local_path: $date_directory/$id >>$temp_config
    echo making new directory $date_directory/$id
    mkdir $date_directory/$id
-   /usr/bin/python2.7 /group_workspaces/cems2/slstr_cpa/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
+   /usr/bin/python2.7 $GWS_PATH/software/slstr_calibration_ftp_retriever/data_retriever.py -c $temp_config -vF
    # clear log directory
    rm $temp_log_dir/*_retrieve.log
 done < <(sed -e 1,6d $temp_viscal_list) 
