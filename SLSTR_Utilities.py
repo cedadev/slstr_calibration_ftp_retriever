@@ -8,12 +8,15 @@ Set of utilities to aid in the identification and retrieval of Sentinel3 SLSTR d
 
 import os, sys,re
 import ftplib
-from datetime import datetime,timedelta
+import ftputil
+from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 import hashlib
 import logging
 from accessSafe_sentinel3 import safe_access
 import ssl
+
+from ftplib import FTP_TLS
 
 #DIR_TYPE = 'd'
 #FILE_TYPE = '-'
@@ -96,14 +99,14 @@ def generate_list(options,path,files_to_retrieve):
     
     try:
         
-        for product in files_to_retrieve.keys():
+        for product in list(files_to_retrieve.keys()):
             listing.append(os.path.join(path,product)) 
             
         return listing
             
     except Exception as ex:
         
-        print "ERROR: could not generate list (%s)" %ex
+        print("ERROR: could not generate list (%s)" %ex)
         
         return None
         
@@ -141,7 +144,7 @@ def output_director(self, msg):
             logging.info(msg) 
         
         if self.verbose:
-            print'%s'%msg
+            print('%s'%msg)
             
 
 def identify_files(config,product, path, existing_products = None, ignore_time_check = False):
@@ -157,6 +160,8 @@ def identify_files(config,product, path, existing_products = None, ignore_time_c
         user = config.get('default','ftp_user')
         pw = config.get('default','ftp_pw')
         site = config.get('default','ftp_host')
+        #tls = config.get('default', 'tls')
+        tls = True #Hardwire this behavior for Ed 14/09/2022
         days = config.get('default','check_days_num')
         check_days = config.get('default','check_days')
         
@@ -166,7 +171,7 @@ def identify_files(config,product, path, existing_products = None, ignore_time_c
     #get connection
     try:
         
-        connection = Retrieve_By_FTP(user,pw,site)
+        connection = Retrieve_By_FTP(user,pw,site, tls=tls)
         
         #get listing of directory (products beneath desired path
         dir_listing = connection.ftp_list(path)
@@ -175,7 +180,7 @@ def identify_files(config,product, path, existing_products = None, ignore_time_c
         products_available = connection.find_products_of_interest(dir_listing, product, days = days, compare_time = check_days, ignore_time_check = ignore_time_check)
         
     except Exception as ex:
-        print "ERROR: Could not connect to %s (%s)" %(site,ex)
+        print("ERROR: Could not connect to %s (%s)" %(site,ex))
           
         #close connection before doing any processing
         connection.close_ftp_connection()
@@ -183,9 +188,10 @@ def identify_files(config,product, path, existing_products = None, ignore_time_c
     #automatically build upa picture of whats a directory or not..    
     files_to_retrieve = {}
     
-    for product in products_available.keys():
+    for product in list(products_available.keys()):
             
-        ftp_path = os.path.join(path,product)
+        #ftp_path = os.path.join(path,product)
+        ftp_path = f"{path}/{product}"
                 
         sub_files = []
         
@@ -196,7 +202,8 @@ def identify_files(config,product, path, existing_products = None, ignore_time_c
             
             #files_to_retrieve[product] = connection.find_files(dir_listing)
             for sub_product in connection.find_files(dir_listing):
-                sub_files.append(os.path.join(path,product,sub_product))
+                #sub_files.append(os.path.join(path,product,sub_product))
+                sub_files.append(f"{path}/{product}/{sub_product}")
                 
             files_to_retrieve[product] = sub_files
                             
@@ -230,7 +237,7 @@ def create_file_list(outputlistfile, file_list):
     
     #open a file list and write the output list to it.
     if os.path.exists(outputlistfile):
-        print "%s as already exists ..will delete" %outputlistfile
+        print("%s as already exists ..will delete" %outputlistfile)
         os.remove(outputlistfile)
     
     try:
@@ -284,7 +291,7 @@ def generate_directories(base_path, sub_path_list, verbose=False):
     final_path = os.path.join(base_path, *sub_path_list)
     if os.path.exists(final_path):
         if verbose:
-            print "Path %s exists!" %final_path
+            print("Path %s exists!" %final_path)
             
         return final_path
     
@@ -314,13 +321,18 @@ def generate_directories(base_path, sub_path_list, verbose=False):
     #check it worked
     if os.path.exists(path_to_generate):
         if verbose:
-            print "Have created path: %s"%path_to_generate
+            print("Have created path: %s"%path_to_generate)
         
         return path_to_generate
     
     else:
         return None
         
+
+class FTP_TLS_IgnoreHost(ftplib.FTP_TLS):
+    def makepasv(self):
+        _, port = super().makepasv()
+        return self.host, port
 
 class Retrieve_By_FTP(object):
     
@@ -330,8 +342,33 @@ class Retrieve_By_FTP(object):
         '''
        
         try:
-            self.connection = ftplib.FTP(self.host, self.username, self.password)
-            #self.connection.ssl_version = ssl.PROTOCOL_SSLv23
+
+            if not self.tls:
+                self.connection = ftplib.FTP(self.host, self.username, self.password)
+
+            else:
+                
+                _old_makepasv = FTP_TLS.makepasv
+
+                def _new_makepasv(self):
+                    host,port = _old_makepasv(self)
+                    host = self.sock.getpeername()[0]
+                    return host,port
+
+                FTP_TLS.makepasv = _new_makepasv
+
+                ftp = FTP_TLS(self.host)
+                ftp.set_debuglevel(0)
+                ftp.login(self.username, self.password)
+                ftp.prot_p()
+
+                self.connection = ftp
+                #ftp.retrlines("NLST")
+                                
+
+        except ftputil.error.PermanentError as ex:
+            raise Exception ("Could not generate TLS FTP connection (%s)" %ex)
+  
         except Exception as ex:
             raise Exception ("Could not generate FTP connection (%s)" %ex)
             
@@ -361,7 +398,7 @@ class Retrieve_By_FTP(object):
             if force:
                 msg = "WARNING: %s already exists on file system.  Replacing with remote file." %server_filename
                 if options.verbose:
-                    print msg
+                    print(msg)
                 logging.info(msg)
                 
                 try:
@@ -375,7 +412,7 @@ class Retrieve_By_FTP(object):
                 msg = "WARNING: %s already exists on file system.  Will NOT replace." %server_filename
                     
                 if options.verbose:
-                    print msg
+                    print(msg)
                     
                 logging.info(msg)
                 
@@ -423,12 +460,12 @@ class Retrieve_By_FTP(object):
             averaged_transfer_rate = (file_size/1024.0)/(float(transfertime.microseconds)/1000.0)
             
             if options.verbose:
-                print"--------- Successfully transferred %s (%s bytes in %s secs = %s ~KB/s) --------" %(server_filename,file_size, transfertime.seconds,averaged_transfer_rate)
+                print("--------- Successfully transferred %s (%s bytes in %s secs = %s ~KB/s) --------" %(server_filename,file_size, transfertime.seconds,averaged_transfer_rate))
             
             return {local_filename:True}, averaged_transfer_rate   
         else:
             if options.verbose:
-                print "Could not download: %s" %server_filename
+                print("Could not download: %s" %server_filename)
                 
             return None, None
         
@@ -439,6 +476,7 @@ class Retrieve_By_FTP(object):
             Get a listing of the contents at a desired point on the remote site
         '''
         lines= []
+        
         #change to required path
         try:
             
@@ -457,7 +495,15 @@ class Retrieve_By_FTP(object):
         except Exception as ex:
             raise Exception ("Could not list directory: %s (%s)" %(path, ex))
         
+        '''
+        try:
+            self.connection.cwd(path)
+            
+            return self.connection.nlst(path)
         
+        except Exception as ex:
+            raise Exception ("Could not list directory: %s (%s)" %(path, ex))
+        '''
     def product_details(self, line):
         '''
             Method to return a datetime and name extracted from a sinle line in an ftp returned long listing - need to deal with all the issues involved!
@@ -481,7 +527,7 @@ class Retrieve_By_FTP(object):
         dateval = None
         product_type = None
         
-        if line[0][0] in FTP_TYPES.keys():
+        if line[0][0] in list(FTP_TYPES.keys()):
             product_type = FTP_TYPES[line[0][0]]
                     
         if '->' in line[-2]:
@@ -564,7 +610,7 @@ class Retrieve_By_FTP(object):
                 cnt += 1
 
             except Exception as ex:
-                print "ERROR: unable to calculate ftp server file time(will retrieve) [%s]" % ex
+                print("ERROR: unable to calculate ftp server file time(will retrieve) [%s]" % ex)
                 
         return products_of_interest
     
@@ -585,11 +631,12 @@ class Retrieve_By_FTP(object):
         return files   
     
     
-    def __init__(self,user,pw,site):
+    def __init__(self,user,pw,site, tls = False):
         
         self.username = user
         self.password = pw
         self.host= site
+        self.tls = tls
             
         #Will raise exception if doesnt work    
         self.ftp_connection()
@@ -611,14 +658,17 @@ class Retrieve_Lock():
         self.filename = filename
         
         pid=self._haslock()
-        if pid: raise PlockPresent("lock by process: %d"%pid)
-        else: self.lock()
+        if pid: 
+            raise PlockPresent("lock by process: %d"%pid)
+        else: 
+            self.lock()
 
         
     def _haslock(self):
         """_haslock check for existence of file and check process id"""
         if os.path.exists(self.filename):
-            fd = file(self.filename)
+            #fd = file(self.filename)
+            fd = open(self.filename, 'r')
             pid = fd.readline()
             if os.path.exists("/proc/%s"%pid):
                 return int(pid)
@@ -626,7 +676,8 @@ class Retrieve_Lock():
     
     def lock(self):
         """lock create lock file and write current process id"""
-        fd = file(self.filename, 'w')
+        #fd = file(self.filename, 'w')
+        fd = open(self.filename, 'w')
         pid = os.getpid()
         fd.write("%d" % pid)
         fd.close()

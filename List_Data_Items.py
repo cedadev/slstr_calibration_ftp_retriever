@@ -6,7 +6,7 @@ Created on Jul 14, 2015
 Module to identify items on the SLSTR test site ready for download
 '''
 import os,sys
-import ConfigParser
+import configparser
 from optparse import OptionParser, OptionGroup
 
 from SLSTR_Utilities import identify_files as identify_files
@@ -37,22 +37,22 @@ def set_options(parser):
 def check_options(options):
            
     if options.stream is None:
-        print "\nError: Please specify a retrieval stream within the configuration file (i.e. LI_017_RoI_Greenland)"
+        print("\nError: Please specify a retrieval stream within the configuration file (i.e. LI_017_RoI_Greenland)")
         parser.print_help()
         sys.exit()
         
     if options.config is None:
-        print "\nError: Please specify an valid configuration file!"
+        print("\nError: Please specify an valid configuration file!")
         parser.print_help()
         sys.exit()
         
     if options.outputlist is None:
-        print "\nError: Please specify an output file to list found data to!"
+        print("\nError: Please specify an output file to list found data to!")
         parser.print_help()
         sys.exit()
         
     if not options.verbose and not options.logging:
-        print "\nError: Please specify either verbose or logging option!!"
+        print("\nError: Please specify either verbose or logging option!!")
         parser.print_help()
         sys.exit()
         
@@ -81,14 +81,14 @@ class List_Data_Items(object):
             
         try:
            
-            if create_file_list(output_list_file,files_to_retrieve.values()):
-                print "\nFinished: Found %s files in within last %s days" %(len(files_to_retrieve.values()), self.days)
+            if create_file_list(output_list_file,list(files_to_retrieve.values())):
+                print("\nFinished: Found %s files in within last %s days" %(len(list(files_to_retrieve.values())), self.days))
     
             else:
-                print "Problem: Could not write file list %s (NO products found)" %(output_list_file)
+                print("Problem: Could not write file list %s (NO products found)" %(output_list_file))
                               
         except Exception as ex:
-            print "ERROR: Could not write file list %s (Error:%s)" %(output_list_file,ex)
+            print("ERROR: Could not write file list %s (Error:%s)" %(output_list_file,ex))
             
     
     def __init__(self,**kwargs):
@@ -100,7 +100,7 @@ class List_Data_Items(object):
         self.options = None
         
         #attribute to the object all kwargs
-        for name, value in kwargs.items():
+        for name, value in list(kwargs.items()):
             setattr(self, name, value)
            
         #sort out logging
@@ -111,7 +111,7 @@ class List_Data_Items(object):
         if os.path.isfile(self.configFile):
             
             try:
-                self.config=ConfigParser.RawConfigParser() 
+                self.config=configparser.RawConfigParser() 
                 self.config.read(self.configFile)
                 
                 self.path = str(self.config.get(self.stream,'ftp_server_path'))
@@ -119,7 +119,7 @@ class List_Data_Items(object):
                 self.product = self.config.get(self.stream,'product_base')
                 
             except:
-                print "ERROR: Could not extract configuration from %s" %self.configFile
+                print("ERROR: Could not extract configuration from %s" %self.configFile)
 
             #over-ride path supplied in config file if -p option supplied
             if self.options.server_path is not None:
@@ -127,7 +127,7 @@ class List_Data_Items(object):
 
         else:            
             
-            print "ERROR: Cannot open configuration file: %s" %self.configFile
+            print("ERROR: Cannot open configuration file: %s" %self.configFile)
             
         
 if __name__ == '__main__':
@@ -146,7 +146,7 @@ if __name__ == '__main__':
                                    stream = options.stream, ignore_time_check=options.ignore_check_days)
         
     except Exception as ex:
-        print "ERROR: unable to initiate data finder class (%s)" %ex
+        print("ERROR: unable to initiate data finder class (%s)" %ex)
         sys.exit()
     
     #activate the main script
@@ -154,14 +154,14 @@ if __name__ == '__main__':
         files_to_retrieve = list_data.list_data_items()
         
     except Exception as ex:
-        print "ERROR: unable to generate list of files to retrieve (%s)" %ex
+        print("ERROR: unable to generate list of files to retrieve (%s)" %ex)
         
     #create the list
     try:
         list_data.create_list_of_items(files_to_retrieve, options.outputlist)
         
     except Exception as ex:
-        print "ERROR: unable to write list of files to retrieve (%s)" %ex
+        print("ERROR: unable to write list of files to retrieve (%s)" %ex)
         
         
         

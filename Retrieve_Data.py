@@ -7,7 +7,7 @@ Script to retrieve data by FTP identified in an input list on the ESA server
 '''
 
 import os,sys
-import ConfigParser
+import configparser
 from optparse import OptionParser, OptionGroup
 
 from SLSTR_Utilities import identify_files as identify_files
@@ -49,22 +49,22 @@ def set_options(parser):
 def check_options(options):
            
     if options.stream is None:
-        print "\nError: Please specify a retrieval stream within the configuration file (i.e. LI_017_RoI_Greenland)"
+        print("\nError: Please specify a retrieval stream within the configuration file (i.e. LI_017_RoI_Greenland)")
         parser.print_help()
         sys.exit()
         
     if options.config is None:
-        print "\nError: Please specify an valid configuration file!"
+        print("\nError: Please specify an valid configuration file!")
         parser.print_help()
         sys.exit()
         
     if options.reportFile is None:
-        print "\nError: Please specify an output report file to list data retrieved to!"
+        print("\nError: Please specify an output report file to list data retrieved to!")
         parser.print_help()
         sys.exit()
         
     if options.inputlist is None:
-        print "\nError: Please specify an input file of found data!"
+        print("\nError: Please specify an input file of found data!")
         parser.print_help()
         sys.exit()
         
@@ -169,7 +169,7 @@ def get_fileset(file_list, cnt, local_path, product, conn_details, options):
         ftp_location = product_file.split(':')[1] 
         
         if options.verbose:
-            print "[%s] Attempting to retrieve %s" %(cnt,ftp_location)
+            print("[%s] Attempting to retrieve %s" %(cnt,ftp_location))
         
         #create local directories to place data retrieved into
         try:                        
@@ -217,7 +217,7 @@ def get_fileset(file_list, cnt, local_path, product, conn_details, options):
                 fileset_retrieve[product] = False
                                                      
         else:
-            print "ERROR: could not make local directory!"
+            print("ERROR: could not make local directory!")
             sys.exit(2)
                 
         cnt += 1  
@@ -232,7 +232,7 @@ def get_fileset(file_list, cnt, local_path, product, conn_details, options):
     if not check_datafile_md5(local_md5_file, local_data_file):
         
         #if this fails remove the data and warn
-        print "--------- Problem: %s failed md5 check.  Removing data files for this download." %(local_data_file)
+        print("--------- Problem: %s failed md5 check.  Removing data files for this download." %(local_data_file))
         
         try:
             os.remove(local_data_file)
@@ -265,7 +265,7 @@ def retrieve_data(config, options):
         file_list = open_file_list(options.inputlist)
         
     except Exception as ex:
-        print "ERROR: Could not open %s (%s)" %(options.inputlist,ex)
+        print("ERROR: Could not open %s (%s)" %(options.inputlist,ex))
         sys.exit(2)
         
     #get config information
@@ -303,7 +303,7 @@ def retrieve_data(config, options):
     files_retrieved = []
     files_not_retrieved = []
     
-    for fileset in filesets.keys():
+    for fileset in list(filesets.keys()):
         
         file_list = filesets[fileset]
         
@@ -328,20 +328,20 @@ def retrieve_data(config, options):
             retry_cnt += 1
             
         if not success:
-            print "Problem downloading: "
+            print("Problem downloading: ")
         
     #now generate output lists
     if create_file_list(options.reportFile,files_retrieved):
-            print "\nFinished: Retrieved %s files.  Report at %s" %(len(files_retrieved),options.reportFile )
+            print("\nFinished: Retrieved %s files.  Report at %s" %(len(files_retrieved),options.reportFile ))
         
     else:
-        print "Problem generating report file: %s" %options.reportFile
+        print("Problem generating report file: %s" %options.reportFile)
             
     if len(files_not_retrieved) > 0:
-        print "Problem retrieving following files on FTP host:"
+        print("Problem retrieving following files on FTP host:")
         
         for probfile in files_not_retrieved:
-            print probfile
+            print(probfile)
         
 
 if __name__ == '__main__':
@@ -356,21 +356,21 @@ if __name__ == '__main__':
     if os.path.isfile(options.config):
         
         try:
-            config=ConfigParser.RawConfigParser() 
+            config=configparser.RawConfigParser() 
             config.read(options.config)
                                     
         except:
-            print "ERROR: Could not extract configuration from %s" %options.config
+            print("ERROR: Could not extract configuration from %s" %options.config)
             
     else:
-        print "ERROR: Cannot open configuration file: %s" %options.config
+        print("ERROR: Cannot open configuration file: %s" %options.config)
             
     #activate the main script
     try:
         retrieve_data(config, options)
         
     except Exception as ex:
-        print "ERROR: Could not retrieve data: %s" %ex
+        print("ERROR: Could not retrieve data: %s" %ex)
         
         
    
